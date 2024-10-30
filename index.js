@@ -64,6 +64,27 @@ app.delete('/games/:id', (req, res) => {
   }
 });
 
+app.put('/games/:id/:name/:price', (req, res) => {
+  const name = req.params.name;
+  const price = parseFloat(req.params.price);
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id) || !name || isNaN(price)) {
+      return res.status(400).send({ error: "" });
+  }
+  const game = games.find(g => g.id === id);
+  if (!game) {
+      return res.status(404).send({ error: 'Game not found.' });
+  }
+  for (const otherGame of games) {
+    if (otherGame.name === name && otherGame.id !== id) {
+        return res.status(409).send({ error: 'The game already exists' });
+    }
+} 
+  game.name = name;
+  game.price = price;
+  res.status(200).send(game);
+});
+
 app.listen(port, () => {
   console.log(`API listening at http://localhost:${port}/docs`);
 });

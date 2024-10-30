@@ -82,6 +82,9 @@ paths:
         parameters:
             -
                 name: id
+                description: The ID of the game to update.
+                schema:
+                    type: integer
                 in: path
                 required: true
     '/games/{name}/{price}':
@@ -139,11 +142,82 @@ paths:
                     type: number
                 in: path
                 required: true
+    '/games/{id}/{name}/{price}':
+        put:
+            tags:
+                - update-game
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/game'
+                            examples:
+                                Updated Game:
+                                    value:
+                                        id: 3
+                                        name: Updated Game
+                                        price: 59.99
+                    description: The game was successfully updated.
+                '400':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error'
+                            examples:
+                                Invalid data:
+                                    value:
+                                        error: Invalid game data. Name and price are required.
+                    description: 'Invalid input, object invalid.'
+                '404':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error'
+                            examples:
+                                Not Found:
+                                    value:
+                                        error: Game with the specified ID was not found.
+                    description: Game not found.
+                '409':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error'
+                            examples:
+                                Conflict:
+                                    value:
+                                        error: A game with the same name already exists.
+                    description: 'Conflict, game name already exists.'
+            summary: Update a game
+            description: Updates the details of a game by its ID.
+        parameters:
+            -
+                name: id
+                description: The ID of the game to update.
+                schema:
+                    type: integer
+                in: path
+                required: true
+            -
+                name: name
+                description: The new name of the game.
+                schema:
+                    type: string
+                in: path
+                required: true
+            -
+                name: price
+                description: The new price of the game.
+                schema:
+                    format: float
+                    type: number
+                in: path
+                required: true
 components:
     schemas:
         error:
-            title: Root Type for error
-            description: ''
+            title: Error
             type: object
             properties:
                 error:
@@ -152,27 +226,24 @@ components:
                 error: Error message.
         game:
             title: Root Type for game
-            description: game
+            description: Game
             required:
+                - id
                 - name
                 - price
             type: object
             properties:
+                id:
+                    description: The unique identifier for a game.
+                    type: integer
                 name:
                     description: The game name.
                     type: string
-                    properties:
-                        type:
-                            type: string
                 price:
                     format: float
-                    description: Price of the game in USD.
+                    description: The price of the game in USD.
                     type: number
-                    properties:
-                        type:
-                            type: string
             example:
-                name:
-                    type: string
-                price:
-                    type: number
+                id: 1
+                name: Updated Game
+                price: 59.99
