@@ -1,12 +1,12 @@
 const express = require('express');
+const cors = require('cors');
 const app = express();
+app.use(cors());
+app.use(express.json());
 const port = 8080;
 const swaggerUi = require("swagger-ui-express");
 const YAML = require('yamljs');
 const swaggerDocument = YAML.load('./docs/swagger.yaml');
-
-app.use(express.json());
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 const games = [
   { id: 1, name: 'Witcher 3', price: 39.99 },
@@ -24,67 +24,70 @@ app.get('/games', (req, res) => {
 });
 
 app.get('/games/:id', (req, res) => {
-  const id = parseInt(req.params.id, 10); 
-  const game = games.find(g => g.id === id);
-  if (!game) {
-      return res.status(404).send({ error: 'Game not found.' });
+  const id = parseInt(req.params.id, 10) - 1; 
+  if (typeof games[id] === 'undefined') {
+    return res.status(404).send({ error: 'Game was not found in games array.' });
   }
-  res.send(game);
+  res.send(games[id]);
 });
 
 app.post('/games/:name/:price', (req, res) => {
   const name = req.params.name;
   const price = req.params.price;
 
- if (!name || isNaN(price)) {
+ if (!name || typeof parseFloat(price) !== 'number') {
     return res.status(400).send({ error: 'Invalid game data. Name and price are required.' });
- } 
+ }
  games.forEach(game => {
   if (game.name == name){
     return res.status(409).send({ error: 'The game already exists'})
   }
  });
+
   const newGame = {
     id: games.length + 1,
     name,
     price
   };
+
   games.push(newGame);
   res.status(201).send(newGame);
 });
 
 app.delete('/games/:id', (req, res) => {
-  const id = parseInt(req.params.id);
-  const index = games.findIndex(g => g.id === id);
-  if (index !== -1) {
-      games.splice(index, 1);
-      res.status(204).send();
-  } else {
-      return res.status(404).send({ error: 'Game was not found in games array.' });
-  }
+    const id = parseInt(req.params.id);
+    const index = games.findIndex(g => g.id === id);
+    if (index !== -1) {
+        games.splice(index, 1);
+        res.status(204).send();
+    } else {
+        return res.status(404).send({ error: 'Game was not found in games array.' });
+    }
 });
 
 app.put('/games/:id/:name/:price', (req, res) => {
-  const name = req.params.name;
-  const price = parseFloat(req.params.price);
-  const id = parseInt(req.params.id, 10);
-  if (isNaN(id) || !name || isNaN(price)) {
-      return res.status(400).send({ error: "" });
-  }
-  const game = games.find(g => g.id === id);
-  if (!game) {
-      return res.status(404).send({ error: 'Game not found.' });
-  }
-  for (const otherGame of games) {
-    if (otherGame.name === name && otherGame.id !== id) {
-        return res.status(409).send({ error: 'The game already exists' });
+    const name = req.params.name;
+    const price = parseFloat(req.params.price);
+    const id = parseInt(req.params.id, 10);
+    if (isNaN(id) || !name || isNaN(price)) {
+        return res.status(400).send({ error: 'Invalid game data. ID, name, and price are required.' });
     }
-} 
-  game.name = name;
-  game.price = price;
-  res.status(200).send(game);
+    const game = games.find(g => g.id === id);
+    if (!game) {
+        return res.status(404).send({ error: 'Game not found.' });
+    }
+    for (const otherGame of games) {
+        if (otherGame.name === name && otherGame.id !== id) {
+            return res.status(409).send({ error: 'The game already exists' });
+        }
+    } 
+    game.name = name;
+    game.price = price;
+    res.status(200).send(game);
 });
 
 app.listen(port, () => {
   console.log(`API listening at http://localhost:${port}/docs`);
 });
+
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
