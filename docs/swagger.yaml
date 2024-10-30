@@ -61,6 +61,24 @@ paths:
             operationId: id
             summary: Get full details of a game
             description: Returns full details of a given id game
+        delete:
+            tags:
+                - delete-game
+            responses:
+                '204':
+                    description: Game successfully deleted.
+                '404':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error'
+                            examples:
+                                error:
+                                    value:
+                                        error: Game was not found in games array.
+                    description: Game was not found in games array.
+            summary: Deletes a game
+            description: Deletes a game by its ID.
         parameters:
             -
                 name: id
