@@ -66,6 +66,61 @@ paths:
                 name: id
                 in: path
                 required: true
+    '/games/{name}/{price}':
+        post:
+            tags:
+                - create
+            responses:
+                '201':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/game'
+                            examples:
+                                Tetris:
+                                    value:
+                                        id: 9
+                                        name: Tetris
+                                        price: 0.99
+                    description: The new game was created
+                '400':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error'
+                            examples:
+                                Missing params:
+                                    value:
+                                        error: One or all params are missing.
+                    description: One or all params are missing.
+                '409':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error'
+                            examples:
+                                Exist:
+                                    value:
+                                        error: The game already exists.
+                    description: The game already exists
+            summary: Create a new game
+            description: A new game using name and price
+        parameters:
+            -
+                name: name
+                description: Name of the game
+                schema:
+                    type: string
+                in: path
+                required: true
+            -
+                name: price
+                description: Price of the game
+                schema:
+                    format: float
+                    type: number
+                in: path
+                required: true
 components:
     schemas:
         error:
@@ -77,3 +132,29 @@ components:
                     type: string
             example:
                 error: Error message.
+        game:
+            title: Root Type for game
+            description: game
+            required:
+                - name
+                - price
+            type: object
+            properties:
+                name:
+                    description: The game name.
+                    type: string
+                    properties:
+                        type:
+                            type: string
+                price:
+                    format: float
+                    description: Price of the game in USD.
+                    type: number
+                    properties:
+                        type:
+                            type: string
+            example:
+                name:
+                    type: string
+                price:
+                    type: number

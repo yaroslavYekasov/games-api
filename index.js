@@ -30,6 +30,26 @@ app.get('/games/:id', (req, res) => {
   }
   res.send(game);
 });
+app.post('/games/:name/:price', (req, res) => {
+  const name = req.params.name;
+  const price = req.params.price;
+
+ if (!name || typeof parseInt(price) !== 'number') {
+    return res.status(400).send({ error: 'Invalid game data. Name and price are required.' });
+ } 
+ games.forEach(game => {
+  if (game.name == name){
+    return res.status(409).send({ error: 'The game already exists'})
+  }
+ });
+  const newGame = {
+    id: games.length + 1,
+    name,
+    price
+  };
+  games.push(newGame);
+  res.status(201).send(newGame);
+});
 app.listen(port, () => {
   console.log(`API listening at http://localhost:${port}/docs`);
 });
